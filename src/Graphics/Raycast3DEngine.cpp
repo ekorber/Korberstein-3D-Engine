@@ -47,10 +47,10 @@ void draw3DMap(float drawThickness = 1.0f) {
 	const int maxCheckDepth = 8;
 	
 	//The x, y coordinates where the ray hits a grid intersection
-	float rayHitX = 0, rayHitY = 0;
+	float rayGridIntersectX = 0, rayGridIntersectY = 0;
 
-	//The x, y distances from one grid intersection to the next
-	float xOffset = 0, yOffset = 0;
+	//The x, y offset distances from one grid intersection to the next
+	float xCheckGridOffset = 0, yCheckGridOffset = 0;
 
 	//The angle the ray is facing, in radians
 	float rayAngle = getNewAngleSafely(playerAngle - RAD * 30.0f);
@@ -86,57 +86,57 @@ void draw3DMap(float drawThickness = 1.0f) {
 			// and bit shift digits back up into its original slot, to multiply by mapBlockSize.
 			
 			// We're trying to find the first intersection of the ray and the grid, on the y-axis.
-			rayHitY = (((int)playerPosY >> log2MapBlockSize) << log2MapBlockSize) - 0.0001f;
+			rayGridIntersectY = (((int)playerPosY >> log2MapBlockSize) << log2MapBlockSize) - 0.0001f;
 
 			// Player's x position, factoring in the angle the ray is facing,
 			// along with the distance from the grid intersection.
-			rayHitX = playerPosX + (rayTanShifted * (playerPosY - rayHitY));
+			rayGridIntersectX = playerPosX + (rayTanShifted * (playerPosY - rayGridIntersectY));
 
-			yOffset = -mapBlockSize;
-			xOffset = mapBlockSize * rayTanShifted;
+			yCheckGridOffset = -mapBlockSize;
+			xCheckGridOffset = mapBlockSize * rayTanShifted;
 		}
 
 		//If facing north
 		if (rayAngle < PI) {
 
 			//Same as above, but just adding mapBlockSize to check the block above the player
-			rayHitY = (((int)playerPosY >> log2MapBlockSize) << log2MapBlockSize) + mapBlockSize;
+			rayGridIntersectY = (((int)playerPosY >> log2MapBlockSize) << log2MapBlockSize) + mapBlockSize;
 
 			// Player's x position, factoring in the angle the ray is facing,
 			// along with the distance from the grid intersection.
-			rayHitX = playerPosX + (rayTanShifted * (playerPosY - rayHitY));
+			rayGridIntersectX = playerPosX + (rayTanShifted * (playerPosY - rayGridIntersectY));
 
-			yOffset = mapBlockSize;
-			xOffset = mapBlockSize * -rayTanShifted;
+			yCheckGridOffset = mapBlockSize;
+			xCheckGridOffset = mapBlockSize * -rayTanShifted;
 		}
 
 		//If facing directly east or west
 		if (rayAngle == 0 || rayAngle == PI || rayAngle == 2 * PI) {
-			rayHitX = playerPosX;
-			rayHitY = playerPosY;
+			rayGridIntersectX = playerPosX;
+			rayGridIntersectY = playerPosY;
 		}
 		
 
 		//Check grid, increasingly further out, until either a wall is found, or maxCheckDepth is reached
 		while (checkDepth < maxCheckDepth) {
-			int mapX = (int) rayHitX >> log2MapBlockSize;
-			int mapY = (int) rayHitY >> log2MapBlockSize;
+			int mapX = (int)rayGridIntersectX >> log2MapBlockSize;
+			int mapY = (int)rayGridIntersectY >> log2MapBlockSize;
 			int mapIndex = (mapY * mapLengthX) + mapX;
 
 			//If hit wall
 			if (mapIndex > 0 && mapIndex < (mapLengthX * mapLengthY) && mapWalls[mapIndex] > 0) {
 				checkDepth = maxCheckDepth;
 
-				horRayPosX = rayHitX;
-				horRayPosY = rayHitY;
+				horRayPosX = rayGridIntersectX;
+				horRayPosY = rayGridIntersectY;
 
-				distHor = get2DVectorLength(playerPosX, playerPosY, rayHitX, rayHitY);
+				distHor = get2DVectorLength(playerPosX, playerPosY, rayGridIntersectX, rayGridIntersectY);
 
 				mapTileValueH = mapWalls[mapIndex];
 				
 			} else {	//Next grid piece
-				rayHitX += xOffset;
-				rayHitY += yOffset;
+				rayGridIntersectX += xCheckGridOffset;
+				rayGridIntersectY += yCheckGridOffset;
 				checkDepth++;
 			}
 		}
@@ -156,34 +156,34 @@ void draw3DMap(float drawThickness = 1.0f) {
 			// and bit shift digits back up into its original slot, to multiply by mapBlockSize.
 
 			// We're trying to find the first intersection of the ray and the grid, on the y-axis.
-			rayHitX = (((int) playerPosX >> log2MapBlockSize) << log2MapBlockSize) - 0.0001f;
+			rayGridIntersectX = (((int) playerPosX >> log2MapBlockSize) << log2MapBlockSize) - 0.0001f;
 
 			// Player's x position, factoring in the angle the ray is facing,
 			// along with the distance from the grid intersection.
-			rayHitY = playerPosY + (rayNegativeTan * (playerPosX - rayHitX));
+			rayGridIntersectY = playerPosY + (rayNegativeTan * (playerPosX - rayGridIntersectX));
 
-			xOffset = -mapBlockSize;
-			yOffset = mapBlockSize * rayNegativeTan;
+			xCheckGridOffset = -mapBlockSize;
+			yCheckGridOffset = mapBlockSize * rayNegativeTan;
 		}
 
 		//If facing east
 		if (rayAngle < PI2 || rayAngle > PI3) {
 
 			//Same as above, but just adding mapBlockSize to check the block above the player
-			rayHitX = (((int)playerPosX >> log2MapBlockSize) << log2MapBlockSize) + mapBlockSize;
+			rayGridIntersectX = (((int)playerPosX >> log2MapBlockSize) << log2MapBlockSize) + mapBlockSize;
 
 			// Player's x position, factoring in the angle the ray is facing,
 			// along with the distance from the grid intersection.
-			rayHitY = playerPosY + (rayNegativeTan * (playerPosX - rayHitX));
+			rayGridIntersectY = playerPosY + (rayNegativeTan * (playerPosX - rayGridIntersectX));
 
-			xOffset = mapBlockSize;
-			yOffset = mapBlockSize * -rayNegativeTan;
+			xCheckGridOffset = mapBlockSize;
+			yCheckGridOffset = mapBlockSize * -rayNegativeTan;
 		}
 
 		//If facing north or south
 		if (rayAngle == PI2 || rayAngle == PI3) {
-			rayHitX = playerPosX;
-			rayHitY = playerPosY;
+			rayGridIntersectX = playerPosX;
+			rayGridIntersectY = playerPosY;
 
 			//Skips the upcoming loop
 			checkDepth = maxCheckDepth;
@@ -191,24 +191,24 @@ void draw3DMap(float drawThickness = 1.0f) {
 
 		//Check grid, increasingly further out, until either a wall is found, or maxCheckDepth is reached
 		while (checkDepth < maxCheckDepth) {
-			int mapX = (int)rayHitX >> log2MapBlockSize;
-			int mapY = (int)rayHitY >> log2MapBlockSize;
+			int mapX = (int)rayGridIntersectX >> log2MapBlockSize;
+			int mapY = (int)rayGridIntersectY >> log2MapBlockSize;
 			int mapIndex = (mapY * mapLengthX) + mapX;
 
 			//If hit wall
 			if (mapIndex > 0 && mapIndex < (mapLengthX * mapLengthY) && mapWalls[mapIndex] > 0) {
 				checkDepth = maxCheckDepth;
 
-				verRayPosX = rayHitX;
-				verRayPosY = rayHitY;
+				verRayPosX = rayGridIntersectX;
+				verRayPosY = rayGridIntersectY;
 
-				distVer = get2DVectorLength(playerPosX, playerPosY, rayHitX, rayHitY);
+				distVer = get2DVectorLength(playerPosX, playerPosY, rayGridIntersectX, rayGridIntersectY);
 
 				mapTileValueV = mapWalls[mapIndex];
 			}
 			else {	//Next grid piece
-				rayHitX += xOffset;
-				rayHitY += yOffset;
+				rayGridIntersectX += xCheckGridOffset;
+				rayGridIntersectY += yCheckGridOffset;
 				checkDepth++;
 			}
 		}
@@ -224,14 +224,14 @@ void draw3DMap(float drawThickness = 1.0f) {
 
 		//Establish shortest distance to wall, between the horizontal and vertical rays
 		if (distHor < distVer) {
-			rayHitX = horRayPosX;
-			rayHitY = horRayPosY;
+			rayGridIntersectX = horRayPosX;
+			rayGridIntersectY = horRayPosY;
 			rayDist = distHor;
 			shadingValue = 0.5;
 		}
 		else {
-			rayHitX = verRayPosX;
-			rayHitY = verRayPosY;
+			rayGridIntersectX = verRayPosX;
+			rayGridIntersectY = verRayPosY;
 			rayDist = distVer;
 			shadingValue = 1;
 		}
@@ -266,7 +266,7 @@ void draw3DMap(float drawThickness = 1.0f) {
 
 		//Fix potential texture orientation issues
 		if (shadingValue == 0.5f) {
-			textureX = (int)(rayHitX * 0.5f) % 32;
+			textureX = (int)(rayGridIntersectX * 0.5f) % 32;
 			
 			//To fix x-mirror issue when facing north vs south
 			if (rayAngle < PI) {
@@ -276,7 +276,8 @@ void draw3DMap(float drawThickness = 1.0f) {
 			mapTileValue = mapTileValueH;
 		}
 		else {
-			textureX = (int)(rayHitY * 0.5f) % 32;
+			textureX = (int)(rayGridIntersectY * 0.5f) % 32;
+			textureX = (int)(rayGridIntersectY * 0.5f) % 32;
 
 			//To fix x-mirror issue when facing north vs south
 			if (rayAngle > PI2 && rayAngle < PI3) {
