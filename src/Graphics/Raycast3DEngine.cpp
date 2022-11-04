@@ -107,7 +107,7 @@ void draw3DMap(float drawThickness = 1.0f) {
 			rayHitX = playerPosX + (rayTanShifted * (playerPosY - rayHitY));
 
 			yOffset = mapBlockSize;
-			xOffset = -mapBlockSize * rayTanShifted;
+			xOffset = mapBlockSize * -rayTanShifted;
 		}
 
 		//If facing directly east or west
@@ -177,7 +177,7 @@ void draw3DMap(float drawThickness = 1.0f) {
 			rayHitY = playerPosY + (rayNegativeTan * (playerPosX - rayHitX));
 
 			xOffset = mapBlockSize;
-			yOffset = -mapBlockSize * rayNegativeTan;
+			yOffset = mapBlockSize * -rayNegativeTan;
 		}
 
 		//If facing north or south
